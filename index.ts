@@ -13,12 +13,18 @@ const server = Bun.serve({
             case '/about':
                 text = "About me!";
                 break;
+            case '/feed':
+                throw new Error("Abandoned page!");
+                
             default:
                 text = "404";
                 break;
         }
 
         return new Response(figlet.textSync(text));
+    },
+    error(error) {
+        return new Response(`Error 500: ${error.message}`);
     }
 })
 
