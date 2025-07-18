@@ -5,9 +5,18 @@ const server = Bun.serve({
     routes: {
         "/": new Response(figlet.textSync("Hello world!")),
         "/about": new Response(figlet.textSync("About me!")),
-        "/feed": _ => {
+        "/feed": (_): never => {
             throw new Error("Abandoned page!");
         },
+        "/greet": async (_): Promise<Response> => {
+            const text = await Bun.file('storage/files/greet.txt').text();
+            return new Response(`<pre>${text}</pre>`, {
+                headers: {
+                    'Content-Type': 'text/html'
+                }
+            });
+        }
+
     },
     fetch(_) {
         return new Response(figlet.textSync("Not Found"), { status: 404 });
