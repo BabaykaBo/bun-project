@@ -1,29 +1,28 @@
-import figlet, { fonts } from "figlet";
+import figlet from "figlet";
+import Elysia from "elysia";
 
-const server = Bun.serve({
-    port: 3000,
-    routes: {
-        "/": new Response(figlet.textSync("Hello world!")),
-        "/about": new Response(figlet.textSync("About me!")),
-        "/feed": (_): never => {
-            throw new Error("Abandoned page!");
-        },
-        "/greet": async (_): Promise<Response> => {
-            const text = await Bun.file('storage/files/greet.txt').text();
-            return new Response(`<pre>${text}</pre>`, {
-                headers: {
-                    'Content-Type': 'text/html'
-                }
+const port = 3000;
+const server = new Elysia()
+    .onError(({ code, error }) => {
+        return new Response(`Error <b>${code}</b>: <span style="color: red">${error.toString()}</span>`,
+            {
+                status: 500,
+                headers: { 'Content-Type': 'text/html' }
             });
-        }
+    })
+    .get("/", _ => new Response(figlet.textSync("Hello world!")))
+    .get("/about", _ => new Response(figlet.textSync("About me!")))
+    .get("/feed", (_): never => {
+        throw new Error("Abandoned page!");
+    })
+    .get("/greet", async (_): Promise<Response> => {
+        const text = await Bun.file('storage/files/greet.txt').text();
+        return new Response(`<pre>${text}</pre>`, {
+            headers: {
+                'Content-Type': 'text/html'
+            }
+        });
+    })
+    .listen(port);
 
-    },
-    fetch(_) {
-        return new Response(figlet.textSync("Not Found"), { status: 404 });
-    },
-    error(error) {
-        return new Response(`Error: ${error.message}`, { status: 500 });
-    }
-})
-
-console.log(`Listening on PORT http://localhost:${server.port}`);
+console.log(`Listening on PORT http://localhost:${server.server?.port}`);
