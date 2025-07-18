@@ -2,29 +2,18 @@ import figlet, { fonts } from "figlet";
 
 const server = Bun.serve({
     port: 3000,
-    fetch(req) {
-        const url = new URL(req.url);
-
-        let text: string;
-        switch (url.pathname) {
-            case '/':
-                text = "Hello world!";
-                break;
-            case '/about':
-                text = "About me!";
-                break;
-            case '/feed':
-                throw new Error("Abandoned page!");
-                
-            default:
-                text = "404";
-                break;
-        }
-
-        return new Response(figlet.textSync(text));
+    routes: {
+        "/": new Response(figlet.textSync("Hello world!")),
+        "/about": new Response(figlet.textSync("About me!")),
+        "/feed": _ => {
+            throw new Error("Abandoned page!");
+        },
+    },
+    fetch(_) {
+        return new Response(figlet.textSync("Not Found"), { status: 404 });
     },
     error(error) {
-        return new Response(`Error 500: ${error.message}`);
+        return new Response(`Error: ${error.message}`, { status: 500 });
     }
 })
 
