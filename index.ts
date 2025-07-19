@@ -1,5 +1,5 @@
 import figlet from "figlet";
-import Elysia from "elysia";
+import Elysia, { t } from "elysia";
 import myPlugin from "./my_plugin";
 
 const port = 3000;
@@ -37,8 +37,19 @@ server.group("my", app => app.use(myPlugin));
 
 // post routes
 server.group("post", app => app
-    .get("/:id", ({ params: { id } }) => figlet.textSync(`Post ${id}`))
-    .post("/", (body) => { return body })
+    .get("/:id", ({ params: { id } }) => {
+        return figlet.textSync(`Post ${id}`);
+    }, {
+        params: t.Object({
+            id: t.Numeric()
+        })
+    })
+    .post("/", (body) => { return body }, {
+        body: t.Object({
+            name: t.String(),
+            age: t.Integer()
+        })
+    })
 );
 
 // tracks routes
