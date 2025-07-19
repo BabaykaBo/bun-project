@@ -3,6 +3,8 @@ import Elysia from "elysia";
 
 const port = 3000;
 const server = new Elysia()
+    .state('version', 1)
+    .decorate('getDate', ()=> Date.now())
     .onError(({ code, error, set }) => {
         if (code === 'NOT_FOUND') {
             return figlet.textSync("404");
@@ -25,6 +27,20 @@ const server = new Elysia()
 
     })
     .get("/post/:id", ({ params: { id } }) => figlet.textSync(`Post ${id}`))
+    .get("/track/*", _ => { return 'Track' })
+    .get("/tracks", ({ set, store, getDate }) => {
+        set.headers = {
+            'content-type': 'application/json'
+        }
+        return JSON.stringify({
+            tracks: [
+                'Dancing', "Sam I", "Holly"
+            ],
+            version: store.version,
+            date: getDate()
+        })
+    })
+    .post("/post", (body) => { return body })
     .listen(port);
 
 console.log(`Listening on PORT http://localhost:${server.server?.port}`);
