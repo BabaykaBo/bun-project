@@ -3,9 +3,11 @@ import Elysia from "elysia";
 import myPlugin from "./my_plugin";
 
 const port = 3000;
+
+// config
 const server = new Elysia()
     .state('version', 1)
-    .decorate('getDate', ()=> Date.now())
+    .decorate('getDate', () => Date.now())
     .onError(({ code, error, set }) => {
         if (code === 'NOT_FOUND') {
             return figlet.textSync("404");
@@ -14,9 +16,10 @@ const server = new Elysia()
         set.headers = { 'content-type': 'text/html' };
         set.status = 500;
         return `Error <b>${code}</b>: <span style="color: red">${error.toString()}</span>`;
-    })
-    .use(myPlugin)
-    .get("/", _ => figlet.textSync("Hello world!"))
+    });
+
+// home routes
+server.get("/", _ => figlet.textSync("Hello world!"))
     .get("/about", _ => figlet.textSync("About me!"))
     .get("/feed", (_): never => {
         throw new Error("Abandoned page!");
@@ -27,10 +30,21 @@ const server = new Elysia()
         set.headers = { 'content-type': 'text/html' };
         return `<pre>${text}</pre>`;
 
-    })
-    .get("/post/:id", ({ params: { id } }) => figlet.textSync(`Post ${id}`))
-    .get("/track/*", _ => { return 'Track' })
-    .get("/tracks", ({ set, store, getDate }) => {
+    });
+
+// my plugin routes
+server.group("my", app => app.use(myPlugin));
+
+// post routes
+server.group("post", app => app
+    .get("/:id", ({ params: { id } }) => figlet.textSync(`Post ${id}`))
+    .post("/", (body) => { return body })
+);
+
+// tracks routes
+server.group("/tracks", app => app
+    .get("/*", _ => { return 'Track' })
+    .get("/", ({ set, store, getDate }) => {
         set.headers = {
             'content-type': 'application/json'
         }
@@ -42,7 +56,9 @@ const server = new Elysia()
             date: getDate()
         })
     })
-    .post("/post", (body) => { return body })
-    .listen(port);
+)
+
+// listen
+server.listen(port);
 
 console.log(`Listening on PORT http://localhost:${server.server?.port}`);
