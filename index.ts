@@ -1,5 +1,6 @@
 import figlet from "figlet";
 import Elysia from "elysia";
+import myPlugin from "./my_plugin";
 
 const port = 3000;
 const server = new Elysia()
@@ -14,6 +15,7 @@ const server = new Elysia()
         set.status = 500;
         return `Error <b>${code}</b>: <span style="color: red">${error.toString()}</span>`;
     })
+    .use(myPlugin)
     .get("/", _ => figlet.textSync("Hello world!"))
     .get("/about", _ => figlet.textSync("About me!"))
     .get("/feed", (_): never => {
